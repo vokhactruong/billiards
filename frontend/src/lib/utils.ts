@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { serverNow } from './clockSync'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -28,7 +29,7 @@ export function calcElapsedMs(session: {
   pausedAt: string | null
   totalPausedMs: number | string
 }): number {
-  const now = Date.now()
+  const now = serverNow()
   const start = new Date(session.startedAt).getTime()
   const paused = session.pausedAt ? now - new Date(session.pausedAt).getTime() : 0
   return now - start - Number(session.totalPausedMs) - paused

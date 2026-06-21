@@ -10,6 +10,10 @@ import reportRoutes from './report.routes'
 
 const router = Router()
 
+router.get('/time', (_req, res) => {
+  res.json({ serverTime: Date.now() })
+})
+
 router.use('/auth', authRoutes)
 router.use('/users', userRoutes)
 router.use('/tables', tableRoutes)
