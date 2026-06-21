@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import {
-  LayoutDashboard, Table2, ShoppingCart, Package, ClipboardList,
+  LayoutDashboard, Table2, Package, ClipboardList,
   BarChart3, Users, Settings, LogOut, Wifi, WifiOff
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -10,7 +10,6 @@ import { useSocket } from '@/contexts/SocketContext'
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: ['OWNER', 'MANAGER', 'STAFF'] },
   { to: '/tables', icon: Table2, label: 'Bàn Bida', roles: ['OWNER', 'MANAGER', 'STAFF'] },
-  { to: '/orders', icon: ShoppingCart, label: 'Đặt món', roles: ['OWNER', 'MANAGER', 'STAFF'] },
   { to: '/products', icon: Package, label: 'Sản phẩm', roles: ['OWNER', 'MANAGER'] },
   { to: '/inventory', icon: ClipboardList, label: 'Kho hàng', roles: ['OWNER', 'MANAGER'] },
   { to: '/invoices', icon: ClipboardList, label: 'Hóa đơn', roles: ['OWNER', 'MANAGER'] },

@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { useState } from 'react'
 import {
-  LayoutDashboard, Table2, ShoppingCart, MoreHorizontal,
+  LayoutDashboard, Table2, MoreHorizontal,
   Package, ClipboardList, BarChart3, Users, Settings,
   LogOut, Wifi, WifiOff, X,
 } from 'lucide-react'
@@ -12,7 +12,6 @@ import { useSocket } from '@/contexts/SocketContext'
 const primaryNav = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', roles: ['OWNER', 'MANAGER', 'STAFF'] },
   { to: '/tables', icon: Table2, label: 'Bàn Bida', roles: ['OWNER', 'MANAGER', 'STAFF'] },
-  { to: '/orders', icon: ShoppingCart, label: 'Đặt món', roles: ['OWNER', 'MANAGER', 'STAFF'] },
 ]
 
 const secondaryNav = [
