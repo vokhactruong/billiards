@@ -1,0 +1,10 @@
+# Bỏ qua node_modules ở cả frontend và backend
+node_modules/
+dist/
+.env
+
+# Bỏ qua các file log hệ thống
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
