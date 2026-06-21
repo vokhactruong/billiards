@@ -28,10 +28,10 @@ export function Sidebar() {
     <aside className="flex h-screen w-60 flex-col border-r border-border bg-card">
       <div className="flex items-center gap-2 border-b border-border p-4">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-          B
+          M
         </div>
         <div>
-          <p className="text-sm font-bold leading-none">Billiard MS</p>
+          <p className="text-sm font-bold leading-none">Nhật Cường Billiard</p>
           <p className="text-xs text-muted-foreground">Management System</p>
         </div>
         <div className="ml-auto">

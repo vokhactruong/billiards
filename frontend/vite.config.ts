@@ -11,7 +11,7 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'icon.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'Billiard Management System',
-        short_name: 'Billiard MS',
+        short_name: 'Nhật Cường Billiards',
         description: 'Quản lý bàn bida, đặt món và thanh toán',
         theme_color: '#09090b',
         background_color: '#09090b',
