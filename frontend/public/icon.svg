@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#09090b"/>
+
+  <!-- Wood frame -->
+  <rect x="48" y="112" width="416" height="288" rx="28" fill="#7c3f1e"/>
+
+  <!-- Inner rail -->
+  <rect x="68" y="132" width="376" height="248" rx="18" fill="#5c2d0e"/>
+
+  <!-- Felt surface -->
+  <rect x="96" y="160" width="320" height="192" rx="6" fill="#166534"/>
+
+  <!-- Felt gradient overlay -->
+  <rect x="96" y="160" width="320" height="192" rx="6" fill="url(#felt)" opacity="0.5"/>
+
+  <!-- Pockets - corners -->
+  <circle cx="96" cy="160" r="18" fill="#09090b"/>
+  <circle cx="416" cy="160" r="18" fill="#09090b"/>
+  <circle cx="96" cy="352" r="18" fill="#09090b"/>
+  <circle cx="416" cy="352" r="18" fill="#09090b"/>
+  <!-- Pockets - middle -->
+  <circle cx="60" cy="256" r="14" fill="#09090b"/>
+  <circle cx="452" cy="256" r="14" fill="#09090b"/>
+
+  <!-- 8-Ball -->
+  <circle cx="256" cy="256" r="58" fill="#1a1a1a" stroke="#2a2a2a" stroke-width="4"/>
+  <circle cx="256" cy="256" r="36" fill="white"/>
+  <text x="256" y="271"
+    font-family="Arial Black, Arial, sans-serif"
+    font-size="38"
+    font-weight="900"
+    fill="#111"
+    text-anchor="middle"
+    dominant-baseline="middle">8</text>
+
+  <!-- Shine on ball -->
+  <ellipse cx="238" cy="234" rx="14" ry="10" fill="white" opacity="0.35"/>
+
+  <defs>
+    <radialGradient id="felt" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#14532d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>

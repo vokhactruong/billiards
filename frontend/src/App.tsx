@@ -4,6 +4,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { SocketProvider } from '@/contexts/SocketContext'
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute'
 import { MainLayout } from '@/components/layout/MainLayout'
+import { PWAPrompt } from '@/components/shared/PWAPrompt'
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
 import Tables from '@/pages/Tables'
@@ -94,6 +95,7 @@ export default function App() {
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            <PWAPrompt />
           </BrowserRouter>
         </SocketProvider>
       </AuthProvider>
