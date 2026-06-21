@@ -185,13 +185,16 @@ export default function Tables() {
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-56 rounded-2xl bg-zinc-900 border border-zinc-700 animate-pulse" />
+            <div key={i} className="h-[11rem] rounded-2xl bg-zinc-900 border border-zinc-700 animate-pulse p-3">
+              <div className="h-3 w-16 bg-zinc-800 rounded mb-3" />
+              <div className="h-20 bg-zinc-800 rounded-xl" />
+            </div>
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4">
-          {tables?.map((table) => (
-            <div key={table.id} className="relative group">
+          {tables?.map((table, i) => (
+            <div key={table.id} className="card-enter relative group" style={{ animationDelay: `${i * 35}ms` }}>
               <TableCard table={table} />
               {isOwner && table.status === 'AVAILABLE' && (
                 <div className="absolute top-10 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">

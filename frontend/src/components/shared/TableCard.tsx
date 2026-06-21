@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Table } from '@/types'
 import { Button } from '@/components/ui/button'
 import { BilliardTableSVG } from './BilliardTableSVG'
@@ -80,7 +81,10 @@ function ActiveTableCard({ table }: Props) {
                 size="sm"
                 variant="outline"
                 className="h-8 text-xs border-yellow-800 text-yellow-400 hover:bg-yellow-900/30 hover:text-yellow-300"
-                onClick={() => pauseTable.mutate(table.id)}
+                onClick={() => pauseTable.mutate(table.id, {
+                  onSuccess: () => toast.success(`Đã tạm dừng ${table.name}`),
+                  onError: () => toast.error('Không thể tạm dừng bàn'),
+                })}
                 disabled={pauseTable.isPending}
               >
                 <Pause className="h-3 w-3 mr-1" />
@@ -113,7 +117,10 @@ function ActiveTableCard({ table }: Props) {
                 size="sm"
                 variant="outline"
                 className="h-8 text-xs border-green-800 text-green-400 hover:bg-green-900/30 hover:text-green-300"
-                onClick={() => resumeTable.mutate(table.id)}
+                onClick={() => resumeTable.mutate(table.id, {
+                  onSuccess: () => toast.success(`Đã tiếp tục ${table.name}`),
+                  onError: () => toast.error('Không thể tiếp tục bàn'),
+                })}
                 disabled={resumeTable.isPending}
               >
                 <Play className="h-3 w-3 mr-1" />
@@ -159,7 +166,10 @@ function AvailableTableCard({ table }: Props) {
         'border-zinc-700 hover:border-green-700 hover:shadow-[0_0_20px_rgba(34,197,94,0.12)]',
         openTable.isPending && 'opacity-60 cursor-wait'
       )}
-      onClick={() => !openTable.isPending && openTable.mutate(table.id)}
+      onClick={() => !openTable.isPending && openTable.mutate(table.id, {
+        onSuccess: () => toast.success(`Đã mở ${table.name}`),
+        onError: () => toast.error(`Không thể mở ${table.name}`),
+      })}
       disabled={openTable.isPending}
     >
       {/* Header */}

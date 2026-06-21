@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import { Table, TableSession } from '@/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -33,8 +34,13 @@ export function CheckoutDialog({ open, onClose, session, table }: Props) {
   const total = Math.max(0, tableAmount + foodAmount - discount)
 
   const handleCheckout = async () => {
-    await checkout.mutateAsync({ sessionId: session.id, discount })
-    onClose()
+    try {
+      await checkout.mutateAsync({ sessionId: session.id, discount })
+      toast.success(`Thanh toán thành công — ${formatCurrency(total)}`)
+      onClose()
+    } catch {
+      toast.error('Thanh toán thất bại, thử lại')
+    }
   }
 
   return (

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { TableSession } from '@/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -46,12 +47,18 @@ export function OrderDialog({ open, onClose, session }: Props) {
 
   const handleSubmit = async () => {
     if (cart.length === 0) return
-    await createOrder.mutateAsync({
-      sessionId: session.id,
-      items: cart.map(({ productId, quantity }) => ({ productId, quantity })),
-    })
-    setCart([])
-    onClose()
+    const totalItems = cart.reduce((s, i) => s + i.quantity, 0)
+    try {
+      await createOrder.mutateAsync({
+        sessionId: session.id,
+        items: cart.map(({ productId, quantity }) => ({ productId, quantity })),
+      })
+      toast.success(`Đã thêm ${totalItems} món — ${formatCurrency(total)}`)
+      setCart([])
+      onClose()
+    } catch {
+      toast.error('Không thể đặt món, thử lại')
+    }
   }
 
   return (

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import api from '@/lib/axios'
-import { Table, ApiResponse } from '@/types'
+import { Table, TableSession, ApiResponse } from '@/types'
 import { useSocket } from '@/contexts/SocketContext'
 
 export function useTables() {
@@ -73,7 +73,31 @@ export function useOpenTable() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (tableId: number) => api.post(`/tables/${tableId}/open`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tables'] }),
+    onMutate: async (tableId) => {
+      await qc.cancelQueries({ queryKey: ['tables'] })
+      const snapshot = qc.getQueryData<Table[]>(['tables'])
+      const fakeSession: TableSession = {
+        id: -1,
+        tableId,
+        startedAt: new Date().toISOString(),
+        pausedAt: null,
+        resumedAt: null,
+        closedAt: null,
+        totalPausedMs: 0,
+        isActive: true,
+        orders: [],
+      }
+      qc.setQueryData<Table[]>(['tables'], (old) =>
+        old?.map((t) =>
+          t.id === tableId ? { ...t, status: 'PLAYING', sessions: [fakeSession] } : t
+        )
+      )
+      return { snapshot }
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.snapshot) qc.setQueryData(['tables'], ctx.snapshot)
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['tables'] }),
   })
 }
 
