@@ -74,11 +74,16 @@ export const checkoutService = async (sessionId: number, discount = 0) => {
 export const getInvoicesService = async (
   page?: string,
   limit?: string,
+  search?: string,
   startDate?: string,
   endDate?: string
 ) => {
   const { page: pageNum, limit: limitNum, skip } = getPagination(page, limit)
+
   const where = {
+    ...(search
+      ? { session: { table: { name: { contains: search, mode: 'insensitive' as const } } } }
+      : {}),
     ...(startDate || endDate
       ? {
           createdAt: {

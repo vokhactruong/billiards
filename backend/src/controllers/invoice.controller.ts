@@ -19,8 +19,8 @@ export const checkout = async (req: AuthRequest, res: Response): Promise<void> =
 
 export const getInvoices = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { page, limit, startDate, endDate } = req.query as Record<string, string>
-    const result = await getInvoicesService(page, limit, startDate, endDate)
+    const { page, limit, search, startDate, endDate } = req.query as Record<string, string>
+    const result = await getInvoicesService(page, limit, search, startDate, endDate)
     sendSuccess(res, result.invoices, 'Invoices retrieved', 200, result.meta)
   } catch (err) {
     sendError(res, err instanceof Error ? err.message : 'Failed', 500)
