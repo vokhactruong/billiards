@@ -31,7 +31,7 @@ export function Sidebar() {
           M
         </div>
         <div>
-          <p className="text-sm font-bold leading-none">Nhật Cường Billiard</p>
+          <p className="text-sm font-bold leading-none">Nhật Cường Billiards</p>
           <p className="text-xs text-muted-foreground">Management System</p>
         </div>
         <div className="ml-auto">

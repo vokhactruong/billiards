@@ -33,9 +33,9 @@ export default function Login() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground text-xl font-bold">
-            B
+            M
           </div>
-          <CardTitle className="text-xl">Billiard Management</CardTitle>
+          <CardTitle className="text-xl">Nhật Cường Billiard</CardTitle>
           <p className="text-sm text-muted-foreground">Đăng nhập để tiếp tục</p>
         </CardHeader>
         <CardContent>
