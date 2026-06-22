@@ -1,13 +1,13 @@
 import { useDashboardStats } from '@/hooks/useReports'
 import { useTables } from '@/hooks/useTables'
-import { TableCard } from '@/components/shared/TableCard'
+// import { TableCard } from '@/components/shared/TableCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils'
 import { Table2, TrendingUp, AlertTriangle, DollarSign } from 'lucide-react'
 
 export default function Dashboard() {
   const { data: stats } = useDashboardStats()
-  const { data: tables, isLoading } = useTables()
+  // const { data: tables, isLoading } = useTables()
 
   return (
     <div className="p-4 md:p-6 space-y-4 md:space-y-6">
