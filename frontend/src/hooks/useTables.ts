@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import api from '@/lib/axios'
 import { TableSummary, ApiResponse } from '@/types'
 import { useSocket } from '@/contexts/SocketContext'
+import { syncClock } from '@/lib/clockSync'
 
 type TablePatch = Partial<TableSummary> & { tableId: number }
 
@@ -64,6 +65,17 @@ export function useTables() {
       socket.off('table_updated', refresh)
     }
   }, [socket, qc])
+
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        syncClock()
+        qc.invalidateQueries({ queryKey: ['tables'] })
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [qc])
 
   return query
 }
