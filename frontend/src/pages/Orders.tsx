@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
-import { Table } from '@/types'
 
 function SessionOrders({ sessionId }: { sessionId: number }) {
   const { data: orders } = useOrders(sessionId)
@@ -41,8 +40,7 @@ function SessionOrders({ sessionId }: { sessionId: number }) {
 
 export default function Orders() {
   const { data: tables } = useTables()
-  const activeTables = tables?.filter((t): t is Table => t.status !== 'AVAILABLE') ?? []
-
+  const activeTables = tables?.filter(t => t.status !== 'AVAILABLE') ?? []
   return (
     <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       <div>
@@ -57,7 +55,7 @@ export default function Orders() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {activeTables.map((table) => {
-            const session = table.sessions?.[0]
+           const sessionId = table.currentSessionId
             return (
               <Card key={table.id}>
                 <CardHeader className="pb-2">
@@ -69,8 +67,8 @@ export default function Orders() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {session ? (
-                    <SessionOrders sessionId={session.id} />
+                  {sessionId ? (
+                    <SessionOrders sessionId={sessionId} />
                   ) : (
                     <p className="text-xs text-muted-foreground">Không có session</p>
                   )}
