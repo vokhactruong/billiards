@@ -60,7 +60,7 @@ export default function Dashboard() {
       </div>
 
       {/* Table Grid */}
-      <div>
+      {/* <div>
         <h2 className="text-base md:text-lg font-semibold mb-3">Trạng thái bàn</h2>
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4">
@@ -75,7 +75,7 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Low Stock Warning */}
       {stats && stats.lowStockProducts.length > 0 && (

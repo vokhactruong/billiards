@@ -17,6 +17,7 @@ export function useTables() {
       const res = await api.get<ApiResponse<TableSummary[]>>('/tables')
       return res.data.data
     },
+    refetchOnMount: 'always',
   })
 
   useEffect(() => {
