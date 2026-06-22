@@ -30,11 +30,11 @@ export function useOrders(sessionId: number | null) {
 export function useCreateOrder() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ sessionId, items }: { sessionId: number; items: { productId: number; quantity: number }[] }) =>
+    mutationFn: ({ sessionId, items }: { sessionId: number; tableId: number; items: { productId: number; quantity: number }[] }) =>
       api.post(`/orders/sessions/${sessionId}`, { items }),
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['orders', variables.sessionId] })
-      qc.invalidateQueries({ queryKey: ['tables'] })
+      qc.invalidateQueries({ queryKey: ['table-detail', variables.tableId] })
     },
   })
 }

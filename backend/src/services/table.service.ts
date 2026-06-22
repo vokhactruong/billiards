@@ -1,6 +1,18 @@
 import { TableStatus } from '@prisma/client'
 import { prisma } from '../prisma'
 
+export function computeElapsed(
+  session: { startedAt: Date; pausedAt: Date | null; totalPausedMs: bigint | number },
+  now = Date.now()
+): number {
+  const paused = session.pausedAt ? now - session.pausedAt.getTime() : 0
+  return Math.max(0, now - session.startedAt.getTime() - Number(session.totalPausedMs) - paused)
+}
+
+export function computeAmount(elapsedMs: number, pricePerHour: number): number {
+  return Math.round((Math.ceil(elapsedMs / 60000) / 60) * pricePerHour)
+}
+
 export const getTablesService = async () => {
   const tables = await prisma.table.findMany({
     where: { isActive: true },
@@ -9,15 +21,45 @@ export const getTablesService = async () => {
       sessions: {
         where: { isActive: true },
         take: 1,
-        include: {
-          orders: {
-            include: { orderItems: { include: { product: true } } },
-          },
-        },
       },
     },
   })
-  return tables
+
+  const now = Date.now()
+  return tables.map(table => {
+    const session = table.sessions[0] ?? null
+    const elapsedMs = session ? computeElapsed(session, now) : null
+    const amount = elapsedMs !== null ? computeAmount(elapsedMs, Number(table.pricePerHour)) : null
+    return {
+      id: table.id,
+      name: table.name,
+      status: table.status,
+      pricePerHour: table.pricePerHour,
+      isActive: table.isActive,
+      elapsedMs,
+      amount,
+      currentSessionId: session?.id ?? null,
+    }
+  })
+}
+
+export const getTableDetailService = async (tableId: number) => {
+  const session = await prisma.tableSession.findFirst({
+    where: { tableId, isActive: true },
+    include: {
+      orders: {
+        include: { orderItems: { include: { product: true } } },
+      },
+    },
+  })
+  if (!session) throw new Error('No active session')
+  return {
+    sessionId: session.id,
+    startedAt: session.startedAt.toISOString(),
+    pausedAt: session.pausedAt?.toISOString() ?? null,
+    totalPausedMs: session.totalPausedMs.toString(),
+    orders: session.orders,
+  }
 }
 
 export const openTableService = async (tableId: number) => {
@@ -51,7 +93,7 @@ export const pauseTableService = async (tableId: number) => {
     prisma.table.update({ where: { id: tableId }, data: { status: TableStatus.PAUSED } }),
   ])
 
-  return updatedSession
+  return { session: updatedSession, table }
 }
 
 export const resumeTableService = async (tableId: number) => {
@@ -75,7 +117,7 @@ export const resumeTableService = async (tableId: number) => {
     prisma.table.update({ where: { id: tableId }, data: { status: TableStatus.PLAYING } }),
   ])
 
-  return updatedSession
+  return { session: updatedSession, table }
 }
 
 export const transferTableService = async (fromTableId: number, toTableId: number) => {
@@ -100,7 +142,7 @@ export const transferTableService = async (fromTableId: number, toTableId: numbe
     prisma.table.update({ where: { id: toTableId }, data: { status: fromTable.status } }),
   ])
 
-  return { message: `Transferred from ${fromTable.name} to ${toTable.name}` }
+  return { session, fromTable, toTable }
 }
 
 export const getSessionService = async (sessionId: number) => {

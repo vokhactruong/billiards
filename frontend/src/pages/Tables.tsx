@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatCurrency } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
-import { Table } from '@/types'
+import { TableSummary } from '@/types'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 
 function AddTableDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -73,7 +73,7 @@ function EditTableDialog({
   table,
   onClose,
 }: {
-  table: Table | null
+  table: TableSummary | null
   onClose: () => void
 }) {
   const [name, setName] = useState(table?.name ?? '')
@@ -115,7 +115,7 @@ function DeleteConfirmDialog({
   table,
   onClose,
 }: {
-  table: Table | null
+  table: TableSummary | null
   onClose: () => void
 }) {
   const deleteTable = useDeleteTable()
@@ -150,8 +150,8 @@ export default function Tables() {
   const { user } = useAuth()
   const { data: tables, isLoading } = useTables()
   const [addOpen, setAddOpen] = useState(false)
-  const [editTable, setEditTable] = useState<Table | null>(null)
-  const [deleteTable, setDeleteTable] = useState<Table | null>(null)
+  const [editTable, setEditTable] = useState<TableSummary | null>(null)
+  const [deleteTable, setDeleteTable] = useState<TableSummary | null>(null)
 
   const isOwner = user?.role === 'OWNER'
 
@@ -185,16 +185,13 @@ export default function Tables() {
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-[11rem] rounded-2xl bg-zinc-900 border border-zinc-700 animate-pulse p-3">
-              <div className="h-3 w-16 bg-zinc-800 rounded mb-3" />
-              <div className="h-20 bg-zinc-800 rounded-xl" />
-            </div>
+            <div key={i} className="h-56 rounded-2xl bg-zinc-900 border border-zinc-700 animate-pulse" />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4">
-          {tables?.map((table, i) => (
-            <div key={table.id} className="card-enter relative group" style={{ animationDelay: `${i * 35}ms` }}>
+          {tables?.map((table) => (
+            <div key={table.id} className="relative group">
               <TableCard table={table} />
               {isOwner && table.status === 'AVAILABLE' && (
                 <div className="absolute top-10 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">

@@ -1,8 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import api from '@/lib/axios'
-import { Table, TableSession, ApiResponse } from '@/types'
+import { TableSummary, ApiResponse } from '@/types'
 import { useSocket } from '@/contexts/SocketContext'
+
+type TablePatch = Partial<TableSummary> & { tableId: number }
 
 export function useTables() {
   const { socket } = useSocket()
@@ -11,29 +13,52 @@ export function useTables() {
   const query = useQuery({
     queryKey: ['tables'],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<Table[]>>('/tables')
+      const res = await api.get<ApiResponse<TableSummary[]>>('/tables')
       return res.data.data
     },
-    refetchInterval: 30000,
   })
 
   useEffect(() => {
     if (!socket) return
+
+    const patchTable = (patch: TablePatch) => {
+      qc.setQueryData<TableSummary[]>(['tables'], (old = []) =>
+        old.map(t => t.id === patch.tableId ? { ...t, ...patch } : t)
+      )
+    }
+
+    const handleTransfer = (data: {
+      fromTableId: number
+      toTableId: number
+      from: Partial<TableSummary>
+      to: Partial<TableSummary>
+    }) => {
+      qc.setQueryData<TableSummary[]>(['tables'], (old = []) =>
+        old.map(t => {
+          if (t.id === data.fromTableId) return { ...t, ...data.from }
+          if (t.id === data.toTableId) return { ...t, ...data.to }
+          return t
+        })
+      )
+    }
+
     const refresh = () => qc.invalidateQueries({ queryKey: ['tables'] })
-    socket.on('table_opened', refresh)
-    socket.on('table_paused', refresh)
-    socket.on('table_resumed', refresh)
-    socket.on('table_closed', refresh)
-    socket.on('table_transferred', refresh)
+
+    socket.on('table_opened', patchTable)
+    socket.on('table_paused', patchTable)
+    socket.on('table_resumed', patchTable)
+    socket.on('table_closed', patchTable)
+    socket.on('table_transferred', handleTransfer)
     socket.on('table_created', refresh)
     socket.on('table_deleted', refresh)
     socket.on('table_updated', refresh)
+
     return () => {
-      socket.off('table_opened', refresh)
-      socket.off('table_paused', refresh)
-      socket.off('table_resumed', refresh)
-      socket.off('table_closed', refresh)
-      socket.off('table_transferred', refresh)
+      socket.off('table_opened', patchTable)
+      socket.off('table_paused', patchTable)
+      socket.off('table_resumed', patchTable)
+      socket.off('table_closed', patchTable)
+      socket.off('table_transferred', handleTransfer)
       socket.off('table_created', refresh)
       socket.off('table_deleted', refresh)
       socket.off('table_updated', refresh)
@@ -47,7 +72,7 @@ export function useCreateTable() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: { name: string; pricePerHour: number }) =>
-      api.post<ApiResponse<Table>>('/tables', data),
+      api.post<ApiResponse<TableSummary>>('/tables', data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['tables'] }),
   })
 }
@@ -72,32 +97,27 @@ export function useUpdateTableName() {
 export function useOpenTable() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (tableId: number) => api.post(`/tables/${tableId}/open`),
+    mutationFn: (tableId: number) =>
+      api.post<ApiResponse<{ id: number }>>(`/tables/${tableId}/open`),
     onMutate: async (tableId) => {
       await qc.cancelQueries({ queryKey: ['tables'] })
-      const snapshot = qc.getQueryData<Table[]>(['tables'])
-      const fakeSession: TableSession = {
-        id: -1,
-        tableId,
-        startedAt: new Date().toISOString(),
-        pausedAt: null,
-        resumedAt: null,
-        closedAt: null,
-        totalPausedMs: 0,
-        isActive: true,
-        orders: [],
-      }
-      qc.setQueryData<Table[]>(['tables'], (old) =>
-        old?.map((t) =>
-          t.id === tableId ? { ...t, status: 'PLAYING', sessions: [fakeSession] } : t
-        )
+      const previous = qc.getQueryData<TableSummary[]>(['tables'])
+      qc.setQueryData<TableSummary[]>(['tables'], (old = []) =>
+        old.map(t => t.id === tableId
+          ? { ...t, status: 'PLAYING', elapsedMs: 0, amount: 0, currentSessionId: -1 }
+          : t)
       )
-      return { snapshot }
+      return { previous }
     },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.snapshot) qc.setQueryData(['tables'], ctx.snapshot)
+    onError: (_err, _id, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['tables'], ctx.previous)
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ['tables'] }),
+    onSuccess: (res, tableId) => {
+      const sessionId = res.data.data.id
+      qc.setQueryData<TableSummary[]>(['tables'], (old = []) =>
+        old.map(t => t.id === tableId ? { ...t, currentSessionId: sessionId } : t)
+      )
+    },
   })
 }
 
@@ -105,7 +125,17 @@ export function usePauseTable() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (tableId: number) => api.post(`/tables/${tableId}/pause`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tables'] }),
+    onMutate: async (tableId) => {
+      await qc.cancelQueries({ queryKey: ['tables'] })
+      const previous = qc.getQueryData<TableSummary[]>(['tables'])
+      qc.setQueryData<TableSummary[]>(['tables'], (old = []) =>
+        old.map(t => t.id === tableId ? { ...t, status: 'PAUSED' } : t)
+      )
+      return { previous }
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['tables'], ctx.previous)
+    },
   })
 }
 
@@ -113,7 +143,17 @@ export function useResumeTable() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (tableId: number) => api.post(`/tables/${tableId}/resume`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tables'] }),
+    onMutate: async (tableId) => {
+      await qc.cancelQueries({ queryKey: ['tables'] })
+      const previous = qc.getQueryData<TableSummary[]>(['tables'])
+      qc.setQueryData<TableSummary[]>(['tables'], (old = []) =>
+        old.map(t => t.id === tableId ? { ...t, status: 'PLAYING' } : t)
+      )
+      return { previous }
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['tables'], ctx.previous)
+    },
   })
 }
 

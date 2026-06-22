@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   getTables,
+  getTableDetail,
   openTable,
   pauseTable,
   resumeTable,
@@ -27,6 +28,7 @@ const router = Router()
 router.use(authenticate)
 
 router.get('/', getTables)
+router.get('/:id/detail', authorize('OWNER', 'MANAGER', 'STAFF'), getTableDetail)
 router.post('/', authorize('OWNER'), createTableValidator, validate, createTable)
 router.post('/:id/open', authorize('OWNER', 'MANAGER', 'STAFF'), openTableValidator, validate, openTable)
 router.post('/:id/pause', authorize('OWNER', 'MANAGER', 'STAFF'), openTableValidator, validate, pauseTable)

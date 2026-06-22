@@ -1,47 +1,30 @@
 import { useState, useEffect } from 'react'
-import { TableSession, Table } from '@/types'
-import { calcElapsedMs, calcTableAmount, formatTimer, formatCurrency } from '@/lib/utils'
+import { calcTableAmount, formatTimer, formatCurrency } from '@/lib/utils'
 
-interface Props {
-  session: TableSession
-  table: Table
-}
+export function useTimerFromElapsed(
+  initialElapsedMs: number | null,
+  isPaused: boolean,
+  pricePerHour = 0
+) {
+  const [elapsed, setElapsed] = useState(initialElapsedMs ?? 0)
 
-export function useTimer(session: TableSession, table: Table) {
-  const [elapsed, setElapsed] = useState(0)
-
+  // Sync when server provides updated elapsedMs (socket patch or modal reopen)
   useEffect(() => {
-    setElapsed(calcElapsedMs(session))
-    if (session.pausedAt) return
+    setElapsed(initialElapsedMs ?? 0)
+  }, [initialElapsedMs])
 
-    const interval = setInterval(() => {
-      setElapsed(calcElapsedMs(session))
-    }, 1000)
-
+  // Count up every second while playing
+  useEffect(() => {
+    if (isPaused || initialElapsedMs === null) return
+    const interval = setInterval(() => setElapsed(prev => prev + 1000), 1000)
     return () => clearInterval(interval)
-  }, [session])
+  }, [isPaused, initialElapsedMs])
 
-  const amount = calcTableAmount(elapsed, Number(table.pricePerHour))
-
+  const amount = calcTableAmount(elapsed, pricePerHour)
   return {
     elapsed,
     timerText: formatTimer(elapsed),
-    amountText: formatCurrency(amount),
     amount,
+    amountText: formatCurrency(amount),
   }
-}
-
-export function Timer({ session, table }: Props) {
-  const { timerText, amountText } = useTimer(session, table)
-
-  return (
-    <div className="text-center">
-      <p className="text-2xl font-mono font-bold tracking-wider text-green-400">
-        {timerText}
-      </p>
-      <p className="text-sm font-semibold text-yellow-400 mt-1">
-        {amountText}
-      </p>
-    </div>
-  )
 }

@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { toast } from 'sonner'
-import { TableSession } from '@/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +10,8 @@ import { Plus, Minus, ShoppingCart } from 'lucide-react'
 interface Props {
   open: boolean
   onClose: () => void
-  session: TableSession
+  sessionId: number
+  tableId: number
 }
 
 interface CartItem {
@@ -22,7 +21,7 @@ interface CartItem {
   quantity: number
 }
 
-export function OrderDialog({ open, onClose, session }: Props) {
+export function OrderDialog({ open, onClose, sessionId, tableId }: Props) {
   const [cart, setCart] = useState<CartItem[]>([])
   const { data: products } = useProducts()
   const createOrder = useCreateOrder()
@@ -47,18 +46,13 @@ export function OrderDialog({ open, onClose, session }: Props) {
 
   const handleSubmit = async () => {
     if (cart.length === 0) return
-    const totalItems = cart.reduce((s, i) => s + i.quantity, 0)
-    try {
-      await createOrder.mutateAsync({
-        sessionId: session.id,
-        items: cart.map(({ productId, quantity }) => ({ productId, quantity })),
-      })
-      toast.success(`Đã thêm ${totalItems} món — ${formatCurrency(total)}`)
-      setCart([])
-      onClose()
-    } catch {
-      toast.error('Không thể đặt món, thử lại')
-    }
+    await createOrder.mutateAsync({
+      sessionId,
+      tableId,
+      items: cart.map(({ productId, quantity }) => ({ productId, quantity })),
+    })
+    setCart([])
+    onClose()
   }
 
   return (

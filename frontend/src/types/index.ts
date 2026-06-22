@@ -126,6 +126,25 @@ export interface RevenueParams {
   groupBy: 'hour' | 'day'
 }
 
+export interface TableSummary {
+  id: number
+  name: string
+  status: TableStatus
+  pricePerHour: string
+  isActive: boolean
+  elapsedMs: number | null
+  amount: number | null
+  currentSessionId: number | null
+}
+
+export interface TableDetail {
+  sessionId: number
+  startedAt: string
+  pausedAt: string | null
+  totalPausedMs: string
+  orders: Order[]
+}
+
 export interface ApiResponse<T> {
   success: boolean
   message: string

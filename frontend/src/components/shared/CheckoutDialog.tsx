@@ -1,46 +1,33 @@
-import { useState, useEffect } from 'react'
-import { toast } from 'sonner'
-import { Table, TableSession } from '@/types'
+import { useState } from 'react'
+import { TableSummary, Order } from '@/types'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useCheckout } from '@/hooks/useInvoices'
-import { calcElapsedMs, calcTableAmount, calcOrderTotal, formatCurrency, formatTimer } from '@/lib/utils'
+import { calcTableAmount, calcOrderTotal, formatCurrency, formatTimer } from '@/lib/utils'
 import { Receipt } from 'lucide-react'
 
 interface Props {
   open: boolean
   onClose: () => void
-  session: TableSession
-  table: Table
+  sessionId: number
+  elapsed: number
+  orders: Order[]
+  table: TableSummary
 }
 
-export function CheckoutDialog({ open, onClose, session, table }: Props) {
+export function CheckoutDialog({ open, onClose, sessionId, elapsed, orders, table }: Props) {
   const [discount, setDiscount] = useState(0)
-  const [elapsed, setElapsed] = useState(0)
   const checkout = useCheckout()
 
-  useEffect(() => {
-    if (!open) return
-    const update = () => setElapsed(calcElapsedMs(session))
-    update()
-    const interval = setInterval(update, 1000)
-    return () => clearInterval(interval)
-  }, [open, session])
-
   const tableAmount = calcTableAmount(elapsed, Number(table.pricePerHour))
-  const foodAmount = calcOrderTotal(session.orders || [])
+  const foodAmount = calcOrderTotal(orders)
   const total = Math.max(0, tableAmount + foodAmount - discount)
 
   const handleCheckout = async () => {
-    try {
-      await checkout.mutateAsync({ sessionId: session.id, discount })
-      toast.success(`Thanh toán thành công — ${formatCurrency(total)}`)
-      onClose()
-    } catch {
-      toast.error('Thanh toán thất bại, thử lại')
-    }
+    await checkout.mutateAsync({ sessionId, discount })
+    onClose()
   }
 
   return (

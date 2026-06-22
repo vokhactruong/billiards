@@ -10,7 +10,13 @@ export const checkout = async (req: AuthRequest, res: Response): Promise<void> =
     const { discount } = req.body
     const invoice = await checkoutService(sessionId, discount || 0)
     const io = getSocketIO()
-    io.emit('table_closed', { sessionId, tableId: invoice.session.tableId, invoice })
+    io.emit('table_closed', {
+      tableId: invoice.session.tableId,
+      status: 'AVAILABLE',
+      elapsedMs: null,
+      amount: null,
+      currentSessionId: null,
+    })
     sendSuccess(res, invoice, 'Checkout successful', 201)
   } catch (err) {
     sendError(res, err instanceof Error ? err.message : 'Failed', 400)

@@ -24,11 +24,7 @@ export default function Dashboard() {
             <Table2 className="h-4 w-4 text-green-500 shrink-0" />
           </CardHeader>
           <CardContent className="px-3 pb-3 md:px-4 md:pb-4 pt-0">
-            {stats != null ? (
-              <p className="text-2xl font-bold">{stats.activeTables}</p>
-            ) : (
-              <div className="h-8 w-10 bg-zinc-800 rounded animate-pulse" />
-            )}
+            <p className="text-2xl font-bold">{stats?.activeTables ?? '-'}</p>
           </CardContent>
         </Card>
 
@@ -38,11 +34,7 @@ export default function Dashboard() {
             <DollarSign className="h-4 w-4 text-yellow-500 shrink-0" />
           </CardHeader>
           <CardContent className="px-3 pb-3 md:px-4 md:pb-4 pt-0">
-            {stats != null ? (
-              <p className="text-lg md:text-2xl font-bold truncate">{formatCurrency(stats.todayRevenue)}</p>
-            ) : (
-              <div className="h-8 w-24 bg-zinc-800 rounded animate-pulse" />
-            )}
+            <p className="text-lg md:text-2xl font-bold truncate">{stats ? formatCurrency(stats.todayRevenue) : '-'}</p>
           </CardContent>
         </Card>
 
@@ -52,11 +44,7 @@ export default function Dashboard() {
             <TrendingUp className="h-4 w-4 text-blue-500 shrink-0" />
           </CardHeader>
           <CardContent className="px-3 pb-3 md:px-4 md:pb-4 pt-0">
-            {stats != null ? (
-              <p className="text-lg md:text-2xl font-bold truncate">{formatCurrency(stats.monthRevenue)}</p>
-            ) : (
-              <div className="h-8 w-24 bg-zinc-800 rounded animate-pulse" />
-            )}
+            <p className="text-lg md:text-2xl font-bold truncate">{stats ? formatCurrency(stats.monthRevenue) : '-'}</p>
           </CardContent>
         </Card>
 
@@ -66,11 +54,7 @@ export default function Dashboard() {
             <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
           </CardHeader>
           <CardContent className="px-3 pb-3 md:px-4 md:pb-4 pt-0">
-            {stats != null ? (
-              <p className="text-2xl font-bold text-red-400">{stats.lowStockCount}</p>
-            ) : (
-              <div className="h-8 w-10 bg-zinc-800 rounded animate-pulse" />
-            )}
+            <p className="text-2xl font-bold text-red-400">{stats?.lowStockCount ?? '-'}</p>
           </CardContent>
         </Card>
       </div>
@@ -81,18 +65,13 @@ export default function Dashboard() {
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-[11rem] rounded-2xl bg-zinc-900 border border-zinc-700 animate-pulse p-3">
-                <div className="h-3 w-16 bg-zinc-800 rounded mb-3" />
-                <div className="h-20 bg-zinc-800 rounded-xl" />
-              </div>
+              <div key={i} className="h-52 rounded-2xl bg-zinc-900 border border-zinc-700 animate-pulse" />
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4">
-            {tables?.map((table, i) => (
-              <div key={table.id} className="card-enter" style={{ animationDelay: `${i * 35}ms` }}>
-                <TableCard table={table} />
-              </div>
+            {tables?.map((table) => (
+              <TableCard key={table.id} table={table} />
             ))}
           </div>
         )}
