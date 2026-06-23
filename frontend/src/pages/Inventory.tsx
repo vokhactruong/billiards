@@ -92,10 +92,15 @@ export default function Inventory() {
             {products?.map((p) => (
               <div
                 key={p.id}
-                className={`flex items-center justify-between rounded-lg border p-3 ${p.stock <= p.minStock ? 'border-red-800' : ''}`}
+                className={`flex items-center gap-3 rounded-lg border p-3 ${p.stock <= p.minStock ? 'border-red-800' : ''}`}
               >
-                <div>
-                  <p className="font-medium text-sm">{p.name}</p>
+                {p.imageUrl ? (
+                  <img src={p.imageUrl} alt={p.name} className="h-10 w-10 rounded-md object-cover shrink-0" />
+                ) : (
+                  <div className="h-10 w-10 rounded-md bg-zinc-800 shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{p.name}</p>
                   <p className="text-xs text-muted-foreground">
                     Giá vốn: {formatCurrency(Number(p.costPrice))} · Bán: {formatCurrency(Number(p.sellingPrice))}
                   </p>

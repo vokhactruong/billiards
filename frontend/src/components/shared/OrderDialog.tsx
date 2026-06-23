@@ -69,15 +69,20 @@ export function OrderDialog({ open, onClose, sessionId, tableId }: Props) {
           {products?.map((p) => (
             <div
               key={p.id}
-              className="flex items-center justify-between rounded-lg border p-3 cursor-pointer hover:bg-accent transition-colors"
+              className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-accent transition-colors"
               onClick={() => addToCart(p.id, p.name, Number(p.sellingPrice))}
             >
-              <div>
-                <p className="text-sm font-medium">{p.name}</p>
+              {p.imageUrl ? (
+                <img src={p.imageUrl} alt={p.name} className="h-12 w-12 rounded-md object-cover shrink-0" />
+              ) : (
+                <div className="h-12 w-12 rounded-md bg-zinc-800 shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{p.name}</p>
                 <p className="text-xs text-muted-foreground">{formatCurrency(Number(p.sellingPrice))}</p>
                 <p className="text-xs text-muted-foreground">Còn: {p.stock}</p>
               </div>
-              <Button size="icon" variant="outline" className="h-7 w-7">
+              <Button size="icon" variant="outline" className="h-7 w-7 shrink-0">
                 <Plus className="h-3 w-3" />
               </Button>
             </div>
