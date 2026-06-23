@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .pt-safe  { padding-top:    env(safe-area-inset-top); }
+  .pb-safe  { padding-bottom: env(safe-area-inset-bottom); }
+  .pb-nav-safe { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
+}
+
 @layer base {
   :root {
     --background: 224 71% 4%;

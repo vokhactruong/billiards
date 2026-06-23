@@ -36,37 +36,39 @@ export function BottomNav() {
   return (
     <>
       {/* Bottom Tab Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-stretch border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-md md:hidden">
-        {allowedPrimary.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/'}
-            className={({ isActive }) =>
-              cn(
-                'flex flex-1 flex-col items-center justify-center gap-1 text-[10px] transition-colors',
-                isActive ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <item.icon className={cn('h-5 w-5', isActive && 'text-primary')} />
-                <span>{item.label}</span>
-              </>
-            )}
-          </NavLink>
-        ))}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-md md:hidden pb-safe">
+        <div className="flex h-16 items-stretch">
+          {allowedPrimary.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              className={({ isActive }) =>
+                cn(
+                  'flex flex-1 flex-col items-center justify-center gap-1 text-[10px] transition-colors',
+                  isActive ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon className={cn('h-5 w-5', isActive && 'text-primary')} />
+                  <span>{item.label}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
 
-        {allowedSecondary.length > 0 && (
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="flex flex-1 flex-col items-center justify-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
-          >
-            <MoreHorizontal className="h-5 w-5" />
-            <span>Thêm</span>
-          </button>
-        )}
+          {allowedSecondary.length > 0 && (
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="flex flex-1 flex-col items-center justify-center gap-1 text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              <MoreHorizontal className="h-5 w-5" />
+              <span>Thêm</span>
+            </button>
+          )}
+        </div>
       </nav>
 
       {/* Slide-up Drawer */}

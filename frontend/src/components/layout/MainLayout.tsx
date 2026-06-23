@@ -10,8 +10,8 @@ export function MainLayout() {
         <Sidebar />
       </div>
 
-      {/* Main content — add bottom padding on mobile for BottomNav */}
-      <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
+      {/* Main content — safe area top (notch) + bottom (BottomNav + home indicator) */}
+      <main className="flex-1 overflow-y-auto pt-safe md:pt-0 pb-nav-safe md:pb-0">
         <Outlet />
       </main>
 
