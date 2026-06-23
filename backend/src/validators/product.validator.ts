@@ -7,6 +7,7 @@ export const createProductValidator = [
   body('sellingPrice').isFloat({ min: 0 }).withMessage('Selling price must be >= 0'),
   body('stock').optional().isInt({ min: 0 }),
   body('minStock').optional().isInt({ min: 0 }),
+  body('imageUrl').optional().isURL().withMessage('Invalid image URL'),
 ]
 
 export const updateProductValidator = [
@@ -16,6 +17,7 @@ export const updateProductValidator = [
   body('costPrice').optional().isFloat({ min: 0 }),
   body('sellingPrice').optional().isFloat({ min: 0 }),
   body('minStock').optional().isInt({ min: 0 }),
+  body('imageUrl').optional().isURL().withMessage('Invalid image URL'),
 ]
 
 export const importStockValidator = [

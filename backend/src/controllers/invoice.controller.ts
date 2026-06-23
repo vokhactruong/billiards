@@ -1,6 +1,6 @@
 import { Response } from 'express'
 import { AuthRequest } from '../types'
-import { checkoutService, getInvoicesService, getInvoiceByIdService } from '../services/invoice.service'
+import { checkoutService, getInvoicesService, getInvoiceByIdService, updateInvoiceService, deleteInvoiceService } from '../services/invoice.service'
 import { sendSuccess, sendError } from '../utils/response'
 import { getSocketIO } from '../socket'
 
@@ -39,5 +39,26 @@ export const getInvoiceById = async (req: AuthRequest, res: Response): Promise<v
     sendSuccess(res, invoice)
   } catch (err) {
     sendError(res, err instanceof Error ? err.message : 'Failed', 404)
+  }
+}
+
+export const updateInvoice = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id)
+    const { discount } = req.body
+    const invoice = await updateInvoiceService(id, discount ?? 0)
+    sendSuccess(res, invoice, 'Invoice updated')
+  } catch (err) {
+    sendError(res, err instanceof Error ? err.message : 'Failed', 400)
+  }
+}
+
+export const deleteInvoice = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id)
+    await deleteInvoiceService(id)
+    sendSuccess(res, null, 'Invoice deleted')
+  } catch (err) {
+    sendError(res, err instanceof Error ? err.message : 'Failed', 400)
   }
 }

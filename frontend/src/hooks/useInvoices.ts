@@ -43,3 +43,23 @@ export function useCheckout() {
     },
   })
 }
+
+export function useUpdateInvoice() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, discount }: { id: number; discount: number }) =>
+      api.put(`/invoices/${id}`, { discount }),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: ['invoices'] })
+      qc.invalidateQueries({ queryKey: ['invoice', id] })
+    },
+  })
+}
+
+export function useDeleteInvoice() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.delete(`/invoices/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['invoices'] }),
+  })
+}

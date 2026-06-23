@@ -122,3 +122,26 @@ export const getInvoiceByIdService = async (id: number) => {
   if (!invoice) throw new Error('Invoice not found')
   return invoice
 }
+
+export const updateInvoiceService = async (id: number, discount: number) => {
+  const invoice = await prisma.invoice.findUnique({ where: { id } })
+  if (!invoice) throw new Error('Invoice not found')
+  const totalAmount = Math.max(0, Number(invoice.tableAmount) + Number(invoice.foodAmount) - discount)
+  return prisma.invoice.update({
+    where: { id },
+    data: { discount, totalAmount },
+    include: {
+      invoiceItems: { include: { product: true } },
+      session: { include: { table: true } },
+    },
+  })
+}
+
+export const deleteInvoiceService = async (id: number) => {
+  const invoice = await prisma.invoice.findUnique({ where: { id } })
+  if (!invoice) throw new Error('Invoice not found')
+  await prisma.$transaction([
+    prisma.invoiceItem.deleteMany({ where: { invoiceId: id } }),
+    prisma.invoice.delete({ where: { id } }),
+  ])
+}

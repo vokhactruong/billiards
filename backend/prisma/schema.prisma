@@ -84,6 +84,7 @@ model Product {
   sellingPrice Decimal
   stock        Int             @default(0)
   minStock     Int             @default(5)
+  imageUrl     String?
   isActive     Boolean         @default(true)
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt

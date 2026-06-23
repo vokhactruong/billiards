@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Product, ProductCategory } from '@/types'
-import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts'
+import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, useUploadImage } from '@/hooks/useProducts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { formatCurrency } from '@/lib/utils'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, ImagePlus, X } from 'lucide-react'
 
 const categoryLabels: Record<ProductCategory, string> = {
   DRINK: 'Đồ uống',
@@ -30,6 +30,7 @@ interface FormState {
   sellingPrice: string
   stock: string
   minStock: string
+  imageUrl: string
 }
 
 const defaultForm: FormState = {
@@ -39,21 +40,28 @@ const defaultForm: FormState = {
   sellingPrice: '',
   stock: '0',
   minStock: '5',
+  imageUrl: '',
 }
 
 export default function Products() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
   const [form, setForm] = useState<FormState>(defaultForm)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { data: products, isLoading } = useProducts()
   const createProduct = useCreateProduct()
   const updateProduct = useUpdateProduct()
   const deleteProduct = useDeleteProduct()
+  const uploadImage = useUploadImage()
 
   const openCreate = () => {
     setEditing(null)
     setForm(defaultForm)
+    setImageFile(null)
+    setImagePreview('')
     setOpen(true)
   }
 
@@ -66,11 +74,32 @@ export default function Products() {
       sellingPrice: String(p.sellingPrice),
       stock: String(p.stock),
       minStock: String(p.minStock),
+      imageUrl: p.imageUrl ?? '',
     })
+    setImageFile(null)
+    setImagePreview(p.imageUrl ?? '')
     setOpen(true)
   }
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview('')
+    setForm({ ...form, imageUrl: '' })
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
   const handleSubmit = async () => {
+    let imageUrl = form.imageUrl
+    if (imageFile) {
+      imageUrl = await uploadImage.mutateAsync(imageFile)
+    }
     const data = {
       name: form.name,
       category: form.category,
@@ -78,6 +107,7 @@ export default function Products() {
       sellingPrice: parseFloat(form.sellingPrice),
       stock: parseInt(form.stock),
       minStock: parseInt(form.minStock),
+      imageUrl: imageUrl || undefined,
     }
     if (editing) {
       await updateProduct.mutateAsync({ id: editing.id, ...data })
@@ -110,6 +140,13 @@ export default function Products() {
           {products?.map((p) => (
             <Card key={p.id} className={p.stock <= p.minStock ? 'border-red-800' : ''}>
               <CardContent className="p-4">
+                {p.imageUrl && (
+                  <img
+                    src={p.imageUrl}
+                    alt={p.name}
+                    className="w-full h-28 object-cover rounded-md mb-3"
+                  />
+                )}
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <p className="font-semibold">{p.name}</p>
@@ -156,6 +193,37 @@ export default function Products() {
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 space-y-2">
+              <Label>Ảnh sản phẩm</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+              {imagePreview ? (
+                <div className="relative w-full h-36">
+                  <img src={imagePreview} alt="preview" className="w-full h-36 object-cover rounded-md" />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-1.5 right-1.5 bg-black/60 rounded-full p-0.5 hover:bg-black/80"
+                  >
+                    <X className="h-3.5 w-3.5 text-white" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-28 rounded-md border border-dashed border-zinc-600 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:border-zinc-400 hover:text-foreground transition-colors"
+                >
+                  <ImagePlus className="h-6 w-6" />
+                  <span className="text-xs">Chọn ảnh (tối đa 5MB)</span>
+                </button>
+              )}
+            </div>
+            <div className="col-span-2 space-y-2">
               <Label>Tên sản phẩm</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
@@ -191,8 +259,11 @@ export default function Products() {
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>Hủy</Button>
-            <Button onClick={handleSubmit} disabled={createProduct.isPending || updateProduct.isPending}>
-              {editing ? 'Cập nhật' : 'Thêm'}
+            <Button
+              onClick={handleSubmit}
+              disabled={createProduct.isPending || updateProduct.isPending || uploadImage.isPending}
+            >
+              {uploadImage.isPending ? 'Đang tải ảnh...' : editing ? 'Cập nhật' : 'Thêm'}
             </Button>
           </div>
         </DialogContent>

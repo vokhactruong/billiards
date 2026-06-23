@@ -30,13 +30,14 @@ export const createProductService = async (data: {
   sellingPrice: number
   stock?: number
   minStock?: number
+  imageUrl?: string
 }) => {
   return prisma.product.create({ data })
 }
 
 export const updateProductService = async (
   id: number,
-  data: { name?: string; category?: ProductCategory; costPrice?: number; sellingPrice?: number; minStock?: number }
+  data: { name?: string; category?: ProductCategory; costPrice?: number; sellingPrice?: number; minStock?: number; imageUrl?: string }
 ) => {
   const product = await prisma.product.findUnique({ where: { id, isActive: true } })
   if (!product) throw new Error('Product not found')

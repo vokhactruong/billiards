@@ -2,6 +2,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/axios'
 import { Product, ProductCategory, ApiResponse } from '@/types'
 
+export function useUploadImage() {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData()
+      formData.append('image', file)
+      const res = await api.post<ApiResponse<{ url: string }>>('/upload/image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      return res.data.data.url
+    },
+  })
+}
+
 export function useProducts(category?: ProductCategory) {
   return useQuery({
     queryKey: ['products', category],

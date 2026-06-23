@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useInvoices, useInvoice } from '@/hooks/useInvoices'
+import { useInvoices, useInvoice, useUpdateInvoice, useDeleteInvoice } from '@/hooks/useInvoices'
+import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatCurrency, formatDuration } from '@/lib/utils'
+import { Invoice } from '@/types'
 import { format } from 'date-fns'
-import { Eye, Printer, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from 'lucide-react'
+import { Eye, Printer, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, Pencil, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50]
@@ -82,6 +85,108 @@ function InvoiceDetailDialog({ invoiceId, onClose }: { invoiceId: number | null;
             <Printer className="h-4 w-4 mr-2" /> In
           </Button>
           <Button onClick={onClose}>Đóng</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ─── Edit Discount Dialog ──────────────────────────────────────────────────────
+
+function EditDiscountDialog({ invoice, onClose }: { invoice: Invoice | null; onClose: () => void }) {
+  const [discount, setDiscount] = useState('')
+  const updateInvoice = useUpdateInvoice()
+
+  useEffect(() => {
+    if (invoice) setDiscount(String(Number(invoice.discount)))
+  }, [invoice])
+
+  if (!invoice) return null
+
+  const discountNum = Math.max(0, parseFloat(discount) || 0)
+  const newTotal = Math.max(0, Number(invoice.tableAmount) + Number(invoice.foodAmount) - discountNum)
+
+  const handleSave = async () => {
+    await updateInvoice.mutateAsync({ id: invoice.id, discount: discountNum })
+    onClose()
+  }
+
+  return (
+    <Dialog open={!!invoice} onOpenChange={onClose}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Sửa hóa đơn #{invoice.id}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 text-sm">
+          <div className="rounded-lg border p-3 space-y-1.5 text-muted-foreground">
+            <div className="flex justify-between">
+              <span>Bàn:</span>
+              <span className="text-foreground font-medium">{invoice.session.table.name}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tiền bàn:</span>
+              <span>{formatCurrency(Number(invoice.tableAmount))}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tiền đồ ăn:</span>
+              <span>{formatCurrency(Number(invoice.foodAmount))}</span>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="discount">Giảm giá (đ)</Label>
+            <Input
+              id="discount"
+              type="number"
+              min={0}
+              value={discount}
+              onChange={(e) => setDiscount(e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <div className="flex justify-between font-semibold border-t pt-2">
+            <span>Tổng cộng mới:</span>
+            <span className="text-green-400">{formatCurrency(newTotal)}</span>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 pt-1">
+          <Button variant="outline" onClick={onClose}>Huỷ</Button>
+          <Button onClick={handleSave} disabled={updateInvoice.isPending}>
+            {updateInvoice.isPending ? 'Đang lưu...' : 'Lưu'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ─── Delete Confirm Dialog ─────────────────────────────────────────────────────
+
+function DeleteConfirmDialog({ invoice, onClose }: { invoice: Invoice | null; onClose: () => void }) {
+  const deleteInvoice = useDeleteInvoice()
+
+  if (!invoice) return null
+
+  const handleDelete = async () => {
+    await deleteInvoice.mutateAsync(invoice.id)
+    onClose()
+  }
+
+  return (
+    <Dialog open={!!invoice} onOpenChange={onClose}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Xoá hóa đơn #{invoice.id}?</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">
+          Hóa đơn bàn <span className="font-medium text-foreground">{invoice.session.table.name}</span> —{' '}
+          <span className="text-green-400 font-semibold">{formatCurrency(Number(invoice.totalAmount))}</span>.
+          Thao tác này không thể hoàn tác.
+        </p>
+        <div className="flex justify-end gap-2 pt-1">
+          <Button variant="outline" onClick={onClose}>Huỷ</Button>
+          <Button variant="destructive" onClick={handleDelete} disabled={deleteInvoice.isPending}>
+            {deleteInvoice.isPending ? 'Đang xoá...' : 'Xoá'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -238,11 +343,16 @@ function SkeletonRows({ count }: { count: number }) {
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function Invoices() {
+  const { user } = useAuth()
+  const isOwner = user?.role === 'OWNER'
+
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null)
+  const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null)
 
   // Debounce search → reset to page 1
   useEffect(() => {
@@ -330,8 +440,8 @@ export default function Invoices() {
                       {formatDuration(inv.duration)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0 ml-3">
-                    <span className="font-bold text-green-400 text-sm">
+                  <div className="flex items-center gap-1.5 shrink-0 ml-3">
+                    <span className="font-bold text-green-400 text-sm mr-1.5">
                       {formatCurrency(Number(inv.totalAmount))}
                     </span>
                     <Button
@@ -342,6 +452,26 @@ export default function Invoices() {
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
+                    {isOwner && (
+                      <>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          onClick={() => setEditingInvoice(inv)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          onClick={() => setDeletingInvoice(inv)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))
@@ -366,6 +496,8 @@ export default function Invoices() {
       </Card>
 
       <InvoiceDetailDialog invoiceId={selectedId} onClose={() => setSelectedId(null)} />
+      <EditDiscountDialog invoice={editingInvoice} onClose={() => setEditingInvoice(null)} />
+      <DeleteConfirmDialog invoice={deletingInvoice} onClose={() => setDeletingInvoice(null)} />
     </div>
   )
 }

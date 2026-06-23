@@ -42,6 +42,7 @@ export interface Product {
   sellingPrice: number
   stock: number
   minStock: number
+  imageUrl?: string
   isActive: boolean
 }
 

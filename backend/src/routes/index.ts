@@ -7,6 +7,7 @@ import productRoutes from './product.routes'
 import inventoryRoutes from './inventory.routes'
 import invoiceRoutes from './invoice.routes'
 import reportRoutes from './report.routes'
+import uploadRoutes from './upload.routes'
 
 const router = Router()
 
@@ -22,5 +23,6 @@ router.use('/products', productRoutes)
 router.use('/inventory', inventoryRoutes)
 router.use('/invoices', invoiceRoutes)
 router.use('/reports', reportRoutes)
+router.use('/upload', uploadRoutes)
 
 export default router

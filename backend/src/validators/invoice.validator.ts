@@ -11,3 +11,8 @@ export const invoiceQueryValidator = [
   query('startDate').optional().isISO8601(),
   query('endDate').optional().isISO8601(),
 ]
+
+export const updateInvoiceValidator = [
+  param('id').isInt().withMessage('Invalid invoice ID'),
+  body('discount').isFloat({ min: 0 }).withMessage('Discount must be >= 0'),
+]
