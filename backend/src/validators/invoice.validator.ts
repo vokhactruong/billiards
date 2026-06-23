@@ -3,6 +3,7 @@ import { body, param, query } from 'express-validator'
 export const checkoutValidator = [
   param('sessionId').isInt().withMessage('Invalid session ID'),
   body('discount').optional().isFloat({ min: 0 }).withMessage('Discount must be >= 0'),
+  body('elapsedMs').optional().isInt({ min: 0 }).withMessage('elapsedMs must be >= 0'),
 ]
 
 export const invoiceQueryValidator = [

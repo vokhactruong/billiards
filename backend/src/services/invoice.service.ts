@@ -2,7 +2,7 @@ import { TableStatus } from '@prisma/client'
 import { prisma } from '../prisma'
 import { getPagination, buildPaginationMeta } from '../utils/response'
 
-export const checkoutService = async (sessionId: number, discount = 0) => {
+export const checkoutService = async (sessionId: number, discount = 0, elapsedMs?: number) => {
   const session = await prisma.tableSession.findUnique({
     where: { id: sessionId, isActive: true },
     include: {
@@ -14,9 +14,10 @@ export const checkoutService = async (sessionId: number, discount = 0) => {
   if (!session) throw new Error('Session not found or already closed')
 
   const now = new Date()
-  const startMs = session.startedAt.getTime()
-  const totalElapsedMs = now.getTime() - startMs - Number(session.totalPausedMs)
-  const durationMinutes = Math.ceil(totalElapsedMs / 60000)
+  const resolvedElapsedMs = elapsedMs != null
+    ? elapsedMs
+    : now.getTime() - session.startedAt.getTime() - Number(session.totalPausedMs)
+  const durationMinutes = Math.ceil(resolvedElapsedMs / 60000)
   const durationHours = durationMinutes / 60
 
   const pricePerHour = Number(session.table.pricePerHour)

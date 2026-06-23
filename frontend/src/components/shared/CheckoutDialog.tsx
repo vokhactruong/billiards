@@ -19,14 +19,18 @@ interface Props {
 
 export function CheckoutDialog({ open, onClose, sessionId, elapsed, orders, table }: Props) {
   const [discount, setDiscount] = useState(0)
+  const [lockedElapsed, setLockedElapsed] = useState<number | null>(null)
   const checkout = useCheckout()
 
-  const tableAmount = calcTableAmount(elapsed, Number(table.pricePerHour))
+  const displayElapsed = lockedElapsed ?? elapsed
+  const tableAmount = calcTableAmount(displayElapsed, Number(table.pricePerHour))
   const foodAmount = calcOrderTotal(orders)
   const total = Math.max(0, tableAmount + foodAmount - discount)
 
   const handleCheckout = async () => {
-    await checkout.mutateAsync({ sessionId, discount })
+    const snapshotElapsed = elapsed
+    setLockedElapsed(snapshotElapsed)
+    await checkout.mutateAsync({ sessionId, discount, elapsedMs: snapshotElapsed })
     onClose()
   }
 
@@ -47,7 +51,7 @@ export function CheckoutDialog({ open, onClose, sessionId, elapsed, orders, tabl
           <div className="rounded-lg border p-4 space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Thời gian chơi:</span>
-              <span className="font-mono">{formatTimer(elapsed)}</span>
+              <span className="font-mono">{formatTimer(displayElapsed)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Tiền bàn ({formatCurrency(Number(table.pricePerHour))}/h):</span>

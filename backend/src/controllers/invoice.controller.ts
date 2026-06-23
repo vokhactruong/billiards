@@ -7,8 +7,8 @@ import { getSocketIO } from '../socket'
 export const checkout = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const sessionId = parseInt(req.params.sessionId)
-    const { discount } = req.body
-    const invoice = await checkoutService(sessionId, discount || 0)
+    const { discount, elapsedMs } = req.body
+    const invoice = await checkoutService(sessionId, discount || 0, elapsedMs != null ? Number(elapsedMs) : undefined)
     const io = getSocketIO()
     io.emit('table_closed', {
       tableId: invoice.session.tableId,

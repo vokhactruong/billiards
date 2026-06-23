@@ -35,8 +35,8 @@ export function useInvoice(id: number | null) {
 export function useCheckout() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ sessionId, discount }: { sessionId: number; discount?: number }) =>
-      api.post(`/invoices/checkout/${sessionId}`, { discount }),
+    mutationFn: ({ sessionId, discount, elapsedMs }: { sessionId: number; discount?: number; elapsedMs?: number }) =>
+      api.post(`/invoices/checkout/${sessionId}`, { discount, elapsedMs }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tables'] })
       qc.invalidateQueries({ queryKey: ['invoices'] })
